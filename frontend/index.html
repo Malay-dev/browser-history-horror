@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Séance of Browsing Past</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset & base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0a0a0f;
+  --surface:      #12121a;
+  --border:       #2a2a3a;
+  --text-primary: #e8d5b0;
+  --text-secondary: #9a8a6a;
+  --accent:       #c17f3a;
+  --accent-dim:   #7a4f22;
+  --error:        #8b2a2a;
+  --font-heading: 'Cinzel Decorative', serif;
+  --font-body:    'IM Fell English', Georgia, serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ===== Fog layer ===== */
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to top, rgba(255,255,255,0.04), transparent);
+  pointer-events: none;
+  animation: fogDrift 20s ease-in-out infinite alternate;
+  z-index: 0;
+}
+@keyframes fogDrift {
+  0%   { transform: translateX(-30px); }
+  100% { transform: translateX(30px); }
+}
+
+/* ===== Container ===== */
+.container {
+  max-width: 720px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Candles ===== */
+.candles {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-bottom: 2rem;
+}
+.candle-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.candle-wrap svg { width: 32px; height: 80px; }
+.flame {
+  animation: flicker var(--flicker-dur, 2.2s) ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+@keyframes flicker {
+  0%   { opacity: 0.85; transform: scaleY(0.97) scaleX(1.0); }
+  25%  { opacity: 1.0;  transform: scaleY(1.02) scaleX(0.98); }
+  50%  { opacity: 0.9;  transform: scaleY(0.99) scaleX(1.01); }
+  75%  { opacity: 1.0;  transform: scaleY(1.01) scaleX(0.99); }
+  100% { opacity: 0.88; transform: scaleY(1.0)  scaleX(1.0); }
+}
+.candle-wrap:nth-child(1) .flame { --flicker-dur: 2.2s; }
+.candle-wrap:nth-child(2) .flame { --flicker-dur: 2.8s; }
+.candle-wrap:nth-child(3) .flame { --flicker-dur: 1.9s; }
+
+/* ===== Header ===== */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.header h1 {
+  font-family: var(--font-heading);
+  color: var(--accent);
+  font-size: 1.6rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5em;
+}
+.header .subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Begin button ===== */
+.begin-btn {
+  display: block;
+  margin: 2rem auto;
+  padding: 0.8rem 2.5rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.begin-btn:hover {
+  background: rgba(193, 127, 58, 0.1);
+  box-shadow: 0 0 20px rgba(193, 127, 58, 0.2);
+}
+.begin-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== Progress ===== */
+.progress-section {
+  display: none;
+  text-align: center;
+  margin: 2rem 0;
+}
+.progress-section.active { display: block; }
+.progress-label {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.6s ease;
+  border-radius: 3px;
+}
+
+/* ===== Chapters ===== */
+.chapters { margin-top: 2rem; }
+
+.chapter-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  animation: cardFadeIn 0.8s ease forwards;
+  opacity: 0;
+}
+@keyframes cardFadeIn {
+  to { opacity: 1; }
+}
+.chapter-card.active {
+  border-color: var(--accent-dim);
+  box-shadow: inset 0 0 30px rgba(193, 127, 58, 0.05);
+}
+.chapter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.8rem;
+}
+.chapter-title {
+  font-family: var(--font-heading);
+  color: var(--accent);
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+}
+.chapter-meta {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+.chapter-text {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  min-height: 2em;
+}
+.chapter-text .cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  animation: blink 530ms step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ===== Intensity bar ===== */
+.intensity {
+  margin-top: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+.intensity-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.intensity-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+.intensity-fill.low       { background: #4a6a4a; width: 25%; }
+.intensity-fill.moderate   { background: #8a7a3a; width: 55%; }
+.intensity-fill.high       { background: #aa5a2a; width: 78%; }
+.intensity-fill.malevolent { background: #8b2a2a; width: 95%; }
+
+/* ===== Audio button ===== */
+.audio-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  transition: color 0.2s;
+}
+.audio-btn:hover { color: var(--accent); }
+
+/* ===== Complete state ===== */
+.complete-section {
+  display: none;
+  text-align: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+.complete-section.active { display: block; }
+.complete-section h2 {
+  font-family: var(--font-heading);
+  color: var(--accent);
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+}
+.complete-section p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+.save-btn {
+  display: inline-block;
+  padding: 0.7rem 2rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.save-btn:hover {
+  background: rgba(193, 127, 58, 0.1);
+  box-shadow: 0 0 20px rgba(193, 127, 58, 0.2);
+}
+
+/* ===== Error state ===== */
+.error-card {
+  display: none;
+  border: 1px solid var(--error);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+.error-card.active { display: block; }
+.error-card h2 {
+  font-family: var(--font-heading);
+  color: var(--error);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+.error-card .error-message {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+.error-card code {
+  display: block;
+  background: rgba(0,0,0,0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.8rem;
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--error);
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+}
+.retry-btn:hover { background: rgba(139, 42, 42, 0.1); }
+
+/* ===== Mute toggle ===== */
+.mute-toggle {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.5rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  z-index: 10;
+  transition: color 0.2s;
+}
+.mute-toggle:hover { color: var(--accent); }
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  body { padding: 1rem 0.5rem; }
+  .chapter-card { padding: 1rem; }
+  .chapter-text { font-size: 0.95rem; }
+  .candles { gap: 2rem; }
+}
+@media (max-width: 320px) {
+  .candles { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Candles -->
+  <div class="candles">
+    <div class="candle-wrap">
+      <svg viewBox="0 0 32 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow1" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stop-color="#f5c842" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="18" r="14" fill="url(#glow1)" class="flame"/>
+        <path d="M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z"
+              fill="#f5c842" class="flame">
+          <animate attributeName="d"
+            values="M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z;
+                    M16 4 C16 4 9 15 9 21 C9 25 12 28 16 28 C20 28 23 25 23 21 C23 15 16 4 16 4Z;
+                    M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z"
+            dur="2.2s" repeatCount="indefinite"/>
+        </path>
+        <rect x="12" y="28" width="8" height="48" rx="2" fill="#c17f3a"/>
+      </svg>
+    </div>
+    <div class="candle-wrap">
+      <svg viewBox="0 0 32 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow2" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stop-color="#f5c842" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="18" r="14" fill="url(#glow2)" class="flame"/>
+        <path d="M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z"
+              fill="#f5c842" class="flame">
+          <animate attributeName="d"
+            values="M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z;
+                    M16 5 C16 5 11 14 11 20 C11 24 13 27 16 27 C19 27 21 24 21 20 C21 14 16 5 16 5Z;
+                    M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z"
+            dur="2.8s" repeatCount="indefinite"/>
+        </path>
+        <rect x="12" y="28" width="8" height="48" rx="2" fill="#c17f3a"/>
+      </svg>
+    </div>
+    <div class="candle-wrap">
+      <svg viewBox="0 0 32 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow3" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stop-color="#f5c842" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="16" cy="18" r="14" fill="url(#glow3)" class="flame"/>
+        <path d="M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z"
+              fill="#f5c842" class="flame">
+          <animate attributeName="d"
+            values="M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z;
+                    M16 3 C16 3 10 13 10 20 C10 24 12 28 16 28 C20 28 22 24 22 20 C22 13 16 3 16 3Z;
+                    M16 6 C16 6 10 16 10 22 C10 25 12 28 16 28 C20 28 22 25 22 22 C22 16 16 6 16 6Z"
+            dur="1.9s" repeatCount="indefinite"/>
+        </path>
+        <rect x="12" y="28" width="8" height="48" rx="2" fill="#c17f3a"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>THE SÉANCE OF BROWSING PAST</h1>
+    <p class="subtitle">A gothic reckoning with your recent tabs</p>
+  </div>
+
+  <!-- Begin button -->
+  <button class="begin-btn" id="beginBtn" onclick="beginSeance()">BEGIN THE SÉANCE</button>
+
+  <!-- Progress -->
+  <div class="progress-section" id="progressSection">
+    <p class="progress-label" id="progressLabel">consulting the spirits…</p>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-card" id="errorCard">
+    <h2>✦ THE SPIRITS CANNOT REACH YOU ✦</h2>
+    <p class="error-message" id="errorMessage"></p>
+    <button class="retry-btn" onclick="location.reload()">TRY AGAIN</button>
+  </div>
+
+  <!-- Chapters -->
+  <div class="chapters" id="chapters"></div>
+
+  <!-- Complete -->
+  <div class="complete-section" id="completeSection">
+    <h2>THE SÉANCE HAS ENDED</h2>
+    <p>Your browsing sins have been recorded in the annals of the digital underworld.
+       May you browse more wisely in the week to come.</p>
+    <a class="save-btn" id="saveBtn" href="#" download="my_haunted_history.html">
+      📖 SAVE YOUR GRIMOIRE
+    </a>
+  </div>
+</div>
+
+<!-- Mute toggle -->
+<button class="mute-toggle" id="muteToggle" onclick="toggleMute()" title="Toggle audio">🔊</button>
+
+<script>
+// ===== State =====
+let sessionId = null;
+let muted = sessionStorage.getItem('bhh_muted') === 'true';
+let currentAudio = null;
+const chapterTexts = {};  // id -> full text so far
+const chapterAudioQueue = [];
+let audioPlaying = false;
+
+if (muted) document.getElementById('muteToggle').textContent = '🔇';
+
+// ===== Stage labels =====
+const STAGE_LABELS = {
+  summoning: 'Summoning records…',
+  detecting: 'Detecting anomalies…',
+  narrating: 'The Archivist is writing…',
+};
+
+// ===== Begin =====
+async function beginSeance() {
+  const btn = document.getElementById('beginBtn');
+  btn.disabled = true;
+  btn.style.display = 'none';
+
+  document.getElementById('progressSection').classList.add('active');
+  document.getElementById('errorCard').classList.remove('active');
+
+  try {
+    const resp = await fetch('/seance', { method: 'POST' });
+    const data = await resp.json();
+    sessionId = data.session_id;
+    connectSSE(sessionId);
+  } catch (err) {
+    showError('Could not start the séance. Is the server running?');
+  }
+}
+
+// ===== SSE =====
+function connectSSE(id) {
+  const source = new EventSource(`/seance/${id}/stream`);
+
+  source.addEventListener('progress', (e) => {
+    const data = JSON.parse(e.data);
+    const label = STAGE_LABELS[data.stage] || 'Processing…';
+    document.getElementById('progressLabel').textContent = label;
+    document.getElementById('progressFill').style.width = data.pct + '%';
+  });
+
+  source.addEventListener('chapter', (e) => {
+    const data = JSON.parse(e.data);
+    document.getElementById('progressSection').classList.remove('active');
+    createChapterCard(data);
+  });
+
+  source.addEventListener('chapter_text', (e) => {
+    const data = JSON.parse(e.data);
+    appendChapterText(data.id, data.text_chunk);
+  });
+
+  source.addEventListener('chapter_audio_ready', (e) => {
+    const data = JSON.parse(e.data);
+    chapterAudioQueue.push(data.chapter_id);
+    if (!audioPlaying) playNextAudio();
+  });
+
+  source.addEventListener('done', (e) => {
+    const data = JSON.parse(e.data);
+    source.close();
+    // Remove cursors
+    document.querySelectorAll('.cursor').forEach(c => c.remove());
+    // Show complete section
+    const complete = document.getElementById('completeSection');
+    complete.classList.add('active');
+    document.getElementById('saveBtn').href = data.grimoire_url;
+  });
+
+  source.addEventListener('error', (e) => {
+    // SSE error event — could be connection or server-sent
+    try {
+      const data = JSON.parse(e.data);
+      showError(data.message);
+    } catch {
+      // Connection error
+      if (source.readyState === EventSource.CLOSED) {
+        showError('Connection to the séance was lost.');
+      }
+    }
+    source.close();
+  });
+}
+
+// ===== Chapter rendering =====
+function createChapterCard(data) {
+  const container = document.getElementById('chapters');
+
+  // Deactivate previous cards
+  container.querySelectorAll('.chapter-card.active').forEach(c => c.classList.remove('active'));
+
+  const card = document.createElement('div');
+  card.className = 'chapter-card active';
+  card.id = `chapter-${data.id}`;
+
+  const intensityClass = data.intensity ? data.intensity.toLowerCase() : 'low';
+
+  card.innerHTML = `
+    <div class="chapter-header">
+      <span class="chapter-title">${escapeHtml(data.title)}</span>
+      <span class="chapter-meta">${escapeHtml(data.day)}</span>
+    </div>
+    <div class="chapter-text" id="chapter-text-${data.id}"><span class="cursor"></span></div>
+    <div class="intensity">
+      <span>HAUNTING INTENSITY:</span>
+      <div class="intensity-track">
+        <div class="intensity-fill ${intensityClass}"></div>
+      </div>
+      <span>${data.intensity || 'LOW'}</span>
+    </div>
+  `;
+
+  container.appendChild(card);
+  chapterTexts[data.id] = '';
+}
+
+function appendChapterText(chapterId, chunk) {
+  const el = document.getElementById(`chapter-text-${chapterId}`);
+  if (!el) return;
+
+  chapterTexts[chapterId] = (chapterTexts[chapterId] || '') + chunk;
+
+  // Remove cursor, add text, re-add cursor
+  const cursor = el.querySelector('.cursor');
+  if (cursor) cursor.remove();
+
+  // Use typewriter-style append
+  const span = document.createElement('span');
+  span.textContent = chunk;
+  el.appendChild(span);
+
+  // Re-add cursor
+  const newCursor = document.createElement('span');
+  newCursor.className = 'cursor';
+  el.appendChild(newCursor);
+
+  // Scroll into view
+  el.closest('.chapter-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===== Audio =====
+function playNextAudio() {
+  if (muted || chapterAudioQueue.length === 0) {
+    audioPlaying = false;
+    return;
+  }
+
+  audioPlaying = true;
+  const chapterId = chapterAudioQueue.shift();
+  const audio = new Audio(`/audio/${sessionId}/${chapterId}`);
+  currentAudio = audio;
+  audio.muted = muted;
+
+  audio.onended = () => {
+    audioPlaying = false;
+    playNextAudio();
+  };
+  audio.onerror = () => {
+    // Fallback to speechSynthesis
+    speakChapter(chapterId);
+  };
+
+  audio.play().catch(() => {
+    speakChapter(chapterId);
+  });
+}
+
+function speakChapter(chapterId) {
+  if (muted || !window.speechSynthesis) {
+    audioPlaying = false;
+    playNextAudio();
+    return;
+  }
+
+  const text = chapterTexts[chapterId] || '';
+  if (!text) {
+    audioPlaying = false;
+    playNextAudio();
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.82;
+  utterance.pitch = 0.75;
+  utterance.volume = 0.9;
+
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('male')
+  );
+  if (preferred) utterance.voice = preferred;
+
+  utterance.onend = () => {
+    audioPlaying = false;
+    playNextAudio();
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function toggleMute() {
+  muted = !muted;
+  sessionStorage.setItem('bhh_muted', muted);
+  document.getElementById('muteToggle').textContent = muted ? '🔇' : '🔊';
+  if (currentAudio) currentAudio.muted = muted;
+  if (muted && window.speechSynthesis) speechSynthesis.cancel();
+}
+
+// ===== Error =====
+function showError(message) {
+  document.getElementById('progressSection').classList.remove('active');
+  const card = document.getElementById('errorCard');
+  document.getElementById('errorMessage').textContent = message;
+  card.classList.add('active');
+}
+
+// ===== Util =====
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
