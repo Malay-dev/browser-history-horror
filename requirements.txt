@@ -1,0 +1,11 @@
+# Browser History Horror — dependencies
+fastapi==0.115.4
+uvicorn[standard]==0.32.0
+httpx==0.28.0
+pandas>=3.1.0
+tabpfn>=9.0.0
+elevenlabs>=1.14.0
+sentry-sdk[fastapi]==2.18.0
+rich==13.9.4
+python-dotenv==1.0.1
+sse-starlette==2.1.3

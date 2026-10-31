@@ -1,0 +1,34 @@
+# Internal design docs (not shipped)
+docs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files from history extraction
+bhh_history_*.db
+bhh_probe_*.db
+
+# TabPFN model cache
+.tabpfn/
